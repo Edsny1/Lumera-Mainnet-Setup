@@ -47,7 +47,7 @@ wget -O lumera-setup.sh https://raw.githubusercontent.com/Edsny1/Lumera-Mainnet-
 
 ```bash
 # Script'i indirin
-wget https://raw.githubusercontent.com/KULLANICI_ADINIZ/REPO_ADINIZ/main/lumera-setup.sh
+wget https://raw.githubusercontent.com/Edsny1/Lumera-Mainnet-Setup/refs/heads/Edsny/lumera-setup.sh
 
 # Çalıştırma izni verin
 chmod +x lumera-setup.sh
