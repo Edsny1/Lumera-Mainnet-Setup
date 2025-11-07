@@ -80,6 +80,27 @@ get_text() {
         "check_balance")
             [ "$LANG" = "TR" ] && echo "Bakiye Kontrol Et" || echo "Check Balance"
             ;;
+        "node_management")
+            [ "$LANG" = "TR" ] && echo "Node Yönetimi" || echo "Node Management"
+            ;;
+        "restart_node")
+            [ "$LANG" = "TR" ] && echo "Node'u Yeniden Başlat" || echo "Restart Node"
+            ;;
+        "stop_node")
+            [ "$LANG" = "TR" ] && echo "Node'u Durdur" || echo "Stop Node"
+            ;;
+        "start_node")
+            [ "$LANG" = "TR" ] && echo "Node'u Başlat" || echo "Start Node"
+            ;;
+        "node_status")
+            [ "$LANG" = "TR" ] && echo "Node Durumu" || echo "Node Status"
+            ;;
+        "delete_node")
+            [ "$LANG" = "TR" ] && echo "Node'u Sil" || echo "Delete Node"
+            ;;
+        "back")
+            [ "$LANG" = "TR" ] && echo "Geri" || echo "Back"
+            ;;
         "exit")
             [ "$LANG" = "TR" ] && echo "Çıkış" || echo "Exit"
             ;;
@@ -91,6 +112,9 @@ get_text() {
             ;;
         "enter_wallet")
             [ "$LANG" = "TR" ] && echo "Cüzdan isminizi girin" || echo "Enter your wallet name"
+            ;;
+        "enter_port")
+            [ "$LANG" = "TR" ] && echo "Port prefix girin (örn: 10, 45)" || echo "Enter port prefix (e.g: 10, 45)"
             ;;
         "installation_complete")
             [ "$LANG" = "TR" ] && echo "Kurulum tamamlandı!" || echo "Installation completed!"
@@ -156,6 +180,26 @@ install_node() {
         return
     fi
     
+    # Port seçimi
+    echo
+    read -p "$(echo -e ${YELLOW}$(get_text enter_port)" [varsayılan: 10]: "${NC})" CUSTOM_PORT
+    
+    # Eğer port girilmemişse varsayılan 10 kullan
+    if [ -z "$CUSTOM_PORT" ]; then
+        CUSTOM_PORT="10"
+    fi
+    
+    # Port validasyonu (sadece rakam kontrolü)
+    if ! [[ "$CUSTOM_PORT" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}Geçersiz port! Sadece rakam girebilirsiniz. Varsayılan port (10) kullanılacak.${NC}"
+        CUSTOM_PORT="10"
+        sleep 2
+    fi
+    
+    echo -e "${GREEN}Seçilen port prefix: $CUSTOM_PORT${NC}"
+    echo -e "${YELLOW}Portlar: ${CUSTOM_PORT}317, ${CUSTOM_PORT}657, ${CUSTOM_PORT}656, vb.${NC}"
+    sleep 2
+    
     echo -e "${BLUE}Kurulum başlıyor...${NC}"
     
     # Bağımlılıkları yükle
@@ -199,14 +243,19 @@ install_node() {
     # Environment değişkenlerini ayarla
     export WALLET="wallet"
     export LUMERA_CHAIN_ID="lumera-mainnet-1"
-    export LUMERA_PORT="10"
+    export LUMERA_PORT="$CUSTOM_PORT"
     
-    # Profil dosyasına ekle
+    # Profil dosyasına ekle (önce eski ayarları temizle)
+    sed -i '/LUMERA_PORT/d' $HOME/.bash_profile 2>/dev/null
+    sed -i '/MONIKER/d' $HOME/.bash_profile 2>/dev/null
+    sed -i '/WALLET/d' $HOME/.bash_profile 2>/dev/null
+    sed -i '/LUMERA_CHAIN_ID/d' $HOME/.bash_profile 2>/dev/null
+    
     cat <<EOF >> $HOME/.bash_profile
 export WALLET="wallet"
 export MONIKER="$MONIKER"
 export LUMERA_CHAIN_ID="lumera-mainnet-1"
-export LUMERA_PORT="10"
+export LUMERA_PORT="$CUSTOM_PORT"
 EOF
     
     source $HOME/.bash_profile
@@ -272,9 +321,26 @@ EOF
     echo -e "${BLUE}Node başlatılıyor...${NC}"
     sudo systemctl restart lumerad
     
+    echo -e "${GREEN}═══════════════════════════════════════${NC}"
     echo -e "${GREEN}$(get_text installation_complete)${NC}"
-    echo -e "${YELLOW}Node durumunu kontrol etmek için: sudo systemctl status lumerad${NC}"
-    echo -e "${YELLOW}Logları görüntülemek için: sudo journalctl -u lumerad -f${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════${NC}"
+    echo -e "${CYAN}Node Bilgileri:${NC}"
+    echo -e "${YELLOW}Moniker: ${WHITE}$MONIKER${NC}"
+    echo -e "${YELLOW}Port Prefix: ${WHITE}$CUSTOM_PORT${NC}"
+    echo -e "${YELLOW}Chain ID: ${WHITE}lumera-mainnet-1${NC}"
+    echo
+    echo -e "${CYAN}Kullanılan Portlar:${NC}"
+    echo -e "${YELLOW}API: ${WHITE}${CUSTOM_PORT}317${NC}"
+    echo -e "${YELLOW}RPC: ${WHITE}${CUSTOM_PORT}657${NC}"
+    echo -e "${YELLOW}P2P: ${WHITE}${CUSTOM_PORT}656${NC}"
+    echo -e "${YELLOW}gRPC: ${WHITE}${CUSTOM_PORT}090${NC}"
+    echo -e "${YELLOW}Prometheus: ${WHITE}${CUSTOM_PORT}660${NC}"
+    echo
+    echo -e "${CYAN}Yararlı Komutlar:${NC}"
+    echo -e "${YELLOW}Servis Durumu: ${WHITE}sudo systemctl status lumerad${NC}"
+    echo -e "${YELLOW}Logları Görüntüle: ${WHITE}sudo journalctl -u lumerad -f${NC}"
+    echo -e "${YELLOW}Sync Durumu: ${WHITE}lumerad status 2>&1 | jq .SyncInfo${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════${NC}"
     
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
 }
@@ -287,6 +353,7 @@ check_sync_status() {
     echo
     lumerad status 2>&1 | jq .SyncInfo
     echo
+    echo -e "${YELLOW}Catching Up: false ise sync tamamlanmıştır${NC}"
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
 }
 
@@ -313,7 +380,11 @@ create_wallet() {
     
     lumerad keys add $WALLET_NAME
     echo
-    echo -e "${GREEN}Cüzdan oluşturuldu! Mnemonic kelimelerinizi güvenli bir yere kaydedin!${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════${NC}"
+    echo -e "${GREEN}Cüzdan oluşturuldu!${NC}"
+    echo -e "${RED}⚠ UYARI: Mnemonic kelimelerinizi güvenli bir yere kaydedin!${NC}"
+    echo -e "${RED}Bu kelimeleri kaybederseniz cüzdanınıza erişimi kaybedersiniz!${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════${NC}"
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
 }
 
@@ -375,6 +446,7 @@ create_validator() {
     
     echo
     echo -e "${GREEN}Validator oluşturma işlemi gönderildi!${NC}"
+    echo -e "${YELLOW}Explorer'dan validator'ınızı kontrol edebilirsiniz.${NC}"
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
 }
 
@@ -435,6 +507,85 @@ check_balance() {
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
 }
 
+# Node yönetimi menüsü
+node_management_menu() {
+    while true; do
+        clear
+        print_logo
+        echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║${NC}     $(get_text node_management)           ${CYAN}║${NC}"
+        echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
+        echo
+        echo -e "${WHITE}1)${NC}  $(get_text node_status)"
+        echo -e "${WHITE}2)${NC}  $(get_text restart_node)"
+        echo -e "${WHITE}3)${NC}  $(get_text stop_node)"
+        echo -e "${WHITE}4)${NC}  $(get_text start_node)"
+        echo -e "${WHITE}5)${NC}  $(get_text delete_node)"
+        echo -e "${WHITE}0)${NC}  $(get_text back)"
+        echo
+        read -p "$(echo -e ${YELLOW}"Seçiminiz / Your choice: "${NC})" choice
+        
+        case $choice in
+            1)
+                clear
+                print_logo
+                sudo systemctl status lumerad
+                echo
+                read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
+                ;;
+            2)
+                echo -e "${BLUE}Node yeniden başlatılıyor...${NC}"
+                sudo systemctl restart lumerad
+                echo -e "${GREEN}Node yeniden başlatıldı!${NC}"
+                sleep 2
+                ;;
+            3)
+                echo -e "${BLUE}Node durduruluyor...${NC}"
+                sudo systemctl stop lumerad
+                echo -e "${GREEN}Node durduruldu!${NC}"
+                sleep 2
+                ;;
+            4)
+                echo -e "${BLUE}Node başlatılıyor...${NC}"
+                sudo systemctl start lumerad
+                echo -e "${GREEN}Node başlatıldı!${NC}"
+                sleep 2
+                ;;
+            5)
+                clear
+                print_logo
+                echo -e "${RED}⚠ UYARI: Bu işlem node'unuzu tamamen silecektir!${NC}"
+                echo -e "${RED}Cüzdan bilgilerinizi yedeklediğinizden emin olun!${NC}"
+                echo
+                read -p "$(echo -e ${YELLOW}"Devam etmek istiyor musunuz? (y/n): "${NC})" confirm
+                if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                    echo -e "${BLUE}Node siliniyor...${NC}"
+                    sudo systemctl stop lumerad
+                    sudo systemctl disable lumerad
+                    sudo rm /etc/systemd/system/lumerad.service
+                    sudo systemctl daemon-reload
+                    rm -rf $HOME/.lumera
+                    rm -rf $HOME/go/bin/lumerad
+                    sed -i '/LUMERA/d' $HOME/.bash_profile
+                    echo -e "${GREEN}Node tamamen silindi!${NC}"
+                    sleep 3
+                    return
+                else
+                    echo -e "${YELLOW}İşlem iptal edildi.${NC}"
+                    sleep 2
+                fi
+                ;;
+            0)
+                return
+                ;;
+            *)
+                echo -e "${RED}Geçersiz seçim!${NC}"
+                sleep 2
+                ;;
+        esac
+    done
+}
+
 # Ana menü
 main_menu() {
     while true; do
@@ -453,6 +604,7 @@ main_menu() {
         echo -e "${WHITE}7)${NC}  $(get_text delegate)"
         echo -e "${WHITE}8)${NC}  $(get_text send_tokens)"
         echo -e "${WHITE}9)${NC}  $(get_text check_balance)"
+        echo -e "${WHITE}10)${NC} $(get_text node_management)"
         echo -e "${WHITE}0)${NC}  $(get_text exit)"
         echo
         read -p "$(echo -e ${YELLOW}"Seçiminiz / Your choice: "${NC})" choice
@@ -467,6 +619,7 @@ main_menu() {
             7) delegate_tokens ;;
             8) send_tokens ;;
             9) check_balance ;;
+            10) node_management_menu ;;
             0) 
                 echo -e "${GREEN}Çıkılıyor... / Exiting...${NC}"
                 exit 0
