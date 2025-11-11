@@ -271,10 +271,10 @@ main() {
     print_logo
     
     # Root kontrolü
-    if [ "$EUID" -eq 0 ]; then 
-        echo -e "${RED}Bu scripti root olarak çalıştırmayın!${NC}"
-        exit 1
-    fi
+    #if [ "$EUID" -eq 0 ]; then 
+     #   echo -e "${RED}Bu scripti root olarak çalıştırmayın!${NC}"
+     #   exit 1
+    #fi
     
     echo -e "${CYAN}Upgrade süreci başlıyor...${NC}"
     echo
