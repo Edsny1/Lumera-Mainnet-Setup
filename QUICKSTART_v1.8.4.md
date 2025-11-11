@@ -5,7 +5,7 @@
 ### Otomatik Script ile (Önerilen)
 
 ```bash
-wget -O upgrade_v1.8.4.sh https://raw.githubusercontent.com/Edsny1/Lumera-Mainnet-Setup/refs/heads/Edsny/scripts/upgrade_v1.8.4.sh && chmod +x upgrade_v1.8.4.sh && ./upgrade_v1.8.4.sh
+wget -O upgrade_v1.8.4.sh https://raw.githubusercontent.com/Edsny1/Lumera-Mainnet-Setup/refs/heads/Edsny/upgrade_v1.8.4.sh && chmod +x upgrade_v1.8.4.sh && ./upgrade_v1.8.4.sh
 ```
 
 ### Manuel Upgrade (Cosmovisor Kullanmayanlar)
