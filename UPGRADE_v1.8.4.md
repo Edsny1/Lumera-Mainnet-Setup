@@ -295,6 +295,19 @@ ls -la $HOME/.lumera/cosmovisor/upgrades/v1.8.4/bin/
 # Manuel upgrade için
 sudo systemctl stop lumerad
 # Binary'yi güncelleyin (Adım 2)
+
+cd /root/.lumera/cosmovisor
+
+# 1️⃣ Mevcut current dizinini tamamen sil
+rm -rf current
+
+# 2️⃣ Şimdi doğru şekilde symlink oluştur
+ln -s upgrades/v1.8.4 current
+
+# 3️⃣ Kontrol et
+readlink -f current
+Çıktı: /root/.lumera/cosmovisor/upgrades/v1.8.4
+
 sudo systemctl start lumerad
 ```
 
