@@ -81,7 +81,6 @@ update_libwasmvm() {
     
     cd $HOME
     
-    # Binary'leri indir
     echo -e "${CYAN}Binary'ler indiriliyor...${NC}"
     wget -q --show-progress https://github.com/LumeraProtocol/lumera/releases/download/v1.8.4/lumera_v1.8.4_linux_amd64.tar.gz
     
@@ -90,15 +89,12 @@ update_libwasmvm() {
         exit 1
     fi
     
-    # Arşivi aç
     echo -e "${CYAN}Arşiv açılıyor...${NC}"
     tar xzvf lumera_v1.8.4_linux_amd64.tar.gz > /dev/null 2>&1
     
-    # libwasmvm'yi taşı
     echo -e "${CYAN}libwasmvm kütüphanesi kuruluyor...${NC}"
     sudo mv libwasmvm.x86_64.so /usr/lib/
     
-    # Checksum doğrulama
     echo -e "${CYAN}Checksum doğrulanıyor...${NC}"
     wget -q https://github.com/CosmWasm/wasmvm/releases/download/v3.0.0-ibc2.0/checksums.txt
     
@@ -122,11 +118,9 @@ manual_upgrade() {
     echo -e "${BLUE}Manuel Upgrade Yapılıyor...${NC}"
     echo -e "${BLUE}══════════════════════════════════════${NC}"
     
-    # Binary'yi yükle
     chmod +x lumerad
     mv lumerad $HOME/go/bin/
     
-    # Versiyon kontrolü
     NEW_VERSION=$(lumerad version 2>/dev/null)
     
     if [ "$NEW_VERSION" = "1.8.4" ]; then
@@ -136,7 +130,6 @@ manual_upgrade() {
         exit 1
     fi
     
-    # Temizlik
     cd $HOME
     rm -f lumera_v1.8.4_linux_amd64.tar.gz checksums.txt install.sh
     
@@ -146,21 +139,18 @@ manual_upgrade() {
     echo -e "${CYAN}sudo systemctl restart lumerad${NC}"
 }
 
-# Cosmovisor upgrade
+# ✅ GÜNCELLENMİŞ FONKSİYON
 cosmovisor_upgrade() {
     echo -e "${BLUE}══════════════════════════════════════${NC}"
     echo -e "${BLUE}Cosmovisor Upgrade Hazırlanıyor...${NC}"
     echo -e "${BLUE}══════════════════════════════════════${NC}"
     
-    # Upgrade dizini oluştur
     echo -e "${CYAN}Upgrade dizini oluşturuluyor...${NC}"
     mkdir -p $HOME/.lumera/cosmovisor/upgrades/v1.8.4/bin
     
-    # Binary'yi kopyala
     chmod +x lumerad
     cp lumerad $HOME/.lumera/cosmovisor/upgrades/v1.8.4/bin/
     
-    # Versiyon kontrolü
     NEW_VERSION=$($HOME/.lumera/cosmovisor/upgrades/v1.8.4/bin/lumerad version 2>/dev/null)
     
     if [ "$NEW_VERSION" = "1.8.4" ]; then
@@ -169,8 +159,16 @@ cosmovisor_upgrade() {
         echo -e "${RED}✗ Cosmovisor binary hazırlama başarısız! Versiyon: $NEW_VERSION${NC}"
         exit 1
     fi
+
+    echo -e "${CYAN}Cosmovisor 'current' symlink'i güncelleniyor...${NC}"
+    cd $HOME/.lumera/cosmovisor
+    if [ -d "current" ] || [ -L "current" ]; then
+        rm -rf current
+    fi
+    ln -s upgrades/v1.8.4 current
+    echo -e "${GREEN}✓ Cosmovisor 'current' symlink'i güncellendi${NC}"
+    readlink -f current
     
-    # Temizlik
     cd $HOME
     rm -f lumera_v1.8.4_linux_amd64.tar.gz checksums.txt lumerad install.sh
     
@@ -195,12 +193,9 @@ check_block_height() {
         
         if [ $REMAINING -gt 0 ]; then
             echo -e "${YELLOW}Upgrade height'a kalan: ${WHITE}$REMAINING blocks${NC}"
-            
-            # Tahmini süre (6 sn block time)
             ESTIMATED_SECONDS=$((REMAINING * 6))
             ESTIMATED_HOURS=$((ESTIMATED_SECONDS / 3600))
             ESTIMATED_MINUTES=$(((ESTIMATED_SECONDS % 3600) / 60))
-            
             echo -e "${YELLOW}Tahmini süre: ${WHITE}~${ESTIMATED_HOURS}h ${ESTIMATED_MINUTES}m${NC}"
         elif [ $REMAINING -eq 0 ]; then
             echo -e "${GREEN}✓ Upgrade height'a ulaşıldı!${NC}"
@@ -210,7 +205,6 @@ check_block_height() {
     fi
 }
 
-# Node restart seçeneği
 offer_restart() {
     echo
     echo -e "${YELLOW}Node'u şimdi yeniden başlatmak istiyor musunuz?${NC}"
@@ -223,7 +217,6 @@ offer_restart() {
         echo -e "${BLUE}Node yeniden başlatılıyor...${NC}"
         sudo systemctl restart lumerad
         sleep 3
-        
         echo -e "${GREEN}✓ Node yeniden başlatıldı${NC}"
         echo
         echo -e "${CYAN}Logları görüntülemek için:${NC}"
@@ -234,7 +227,6 @@ offer_restart() {
     fi
 }
 
-# Özet bilgiler
 print_summary() {
     echo
     echo -e "${GREEN}══════════════════════════════════════════════════════${NC}"
@@ -265,28 +257,18 @@ print_summary() {
     echo -e "${GREEN}══════════════════════════════════════════════════════${NC}"
 }
 
-# Ana fonksiyon
 main() {
     clear
     print_logo
     
-    # Root kontrolü
-    #if [ "$EUID" -eq 0 ]; then 
-     #   echo -e "${RED}Bu scripti root olarak çalıştırmayın!${NC}"
-     #   exit 1
-    #fi
-    
     echo -e "${CYAN}Upgrade süreci başlıyor...${NC}"
     echo
     
-    # Kontroller
     check_current_version
     echo
-    
     check_cosmovisor
     echo
     
-    # Onay
     echo -e "${YELLOW}Devam etmek istiyor musunuz? (y/n)${NC}"
     read -p "> " CONFIRM
     
@@ -296,16 +278,11 @@ main() {
     fi
     
     echo
-    
-    # Yedekleme
     backup_binary
     echo
-    
-    # libwasmvm güncelleme
     update_libwasmvm
     echo
     
-    # Upgrade tipi
     if [ "$USE_COSMOVISOR" = true ]; then
         cosmovisor_upgrade
     else
@@ -313,22 +290,16 @@ main() {
     fi
     
     echo
-    
-    # Block height kontrol
     check_block_height
     
-    # Manuel upgrade ise restart öner
     if [ "$USE_COSMOVISOR" = false ]; then
         offer_restart
     fi
     
-    # Özet
     print_summary
-    
     echo
     echo -e "${GREEN}Script başarıyla tamamlandı!${NC}"
     echo -e "${CYAN}Hazırlayan: OshVanK${NC}"
 }
 
-# Script'i çalıştır
 main
