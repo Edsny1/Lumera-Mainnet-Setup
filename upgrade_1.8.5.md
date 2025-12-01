@@ -6,7 +6,7 @@ lumerad tx gov vote 5 yes --from wallet --chain-id lumera-mainnet-1 --gas-prices
 cd $HOME
 ```
 ```
-wget -O lumera_v1.8.5_linux_amd64.tar.gz https://github.com/LumeraProtocol/lumera/releases/download/v1.8.5/lumera_v1.8.5_linux_amd64.tar.gz
+wget https://github.com/LumeraProtocol/lumera/releases/download/v1.8.5/lumera_v1.8.5_linux_amd64.tar.gz
 ```
 ```
 tar -xvzf lumera_v1.8.5_linux_amd64.tar.gz
