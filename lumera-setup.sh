@@ -24,7 +24,7 @@ print_logo() {
     echo -e "${NC}"
     echo
     echo -e "${YELLOW}============================================================${NC}"
-    echo -e "${WHITE}         LumeraNetwork Setup Script${NC}"
+    echo -e "${WHITE}         LumeraNetwork Setup Script v1.9.0${NC}"
     echo -e "${WHITE}              Prepared by: OshVanK${NC}"
     echo -e "${YELLOW}============================================================${NC}"
     echo
@@ -208,12 +208,12 @@ install_node() {
     # Go yükle
     install_go
     
-    # Lumera binary indir
-    echo -e "${BLUE}Lumera binary indiriliyor...${NC}"
+    # Lumera binary indir (v1.9.0)
+    echo -e "${BLUE}Lumera v1.9.0 binary indiriliyor...${NC}"
     cd $HOME
-    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.7.2/lumera_v1.7.2_linux_amd64.tar.gz
-    tar -xvf lumera_v1.7.2_linux_amd64.tar.gz
-    rm lumera_v1.7.2_linux_amd64.tar.gz
+    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.9.0/lumera_v1.9.0_linux_amd64.tar.gz
+    tar -xvf lumera_v1.9.0_linux_amd64.tar.gz
+    rm lumera_v1.9.0_linux_amd64.tar.gz
     rm -f install.sh
     sudo mv libwasmvm.x86_64.so /usr/lib/
     chmod +x lumerad
@@ -325,6 +325,7 @@ EOF
     echo -e "${GREEN}$(get_text installation_complete)${NC}"
     echo -e "${GREEN}═══════════════════════════════════════${NC}"
     echo -e "${CYAN}Node Bilgileri:${NC}"
+    echo -e "${YELLOW}Versiyon: ${WHITE}v1.9.0${NC}"
     echo -e "${YELLOW}Moniker: ${WHITE}$MONIKER${NC}"
     echo -e "${YELLOW}Port Prefix: ${WHITE}$CUSTOM_PORT${NC}"
     echo -e "${YELLOW}Chain ID: ${WHITE}lumera-mainnet-1${NC}"
@@ -340,6 +341,7 @@ EOF
     echo -e "${YELLOW}Servis Durumu: ${WHITE}sudo systemctl status lumerad${NC}"
     echo -e "${YELLOW}Logları Görüntüle: ${WHITE}sudo journalctl -u lumerad -f${NC}"
     echo -e "${YELLOW}Sync Durumu: ${WHITE}lumerad status 2>&1 | jq .SyncInfo${NC}"
+    echo -e "${YELLOW}Versiyon Kontrolü: ${WHITE}lumerad version${NC}"
     echo -e "${GREEN}═══════════════════════════════════════${NC}"
     
     read -p "$(echo -e ${CYAN}$(get_text press_enter)${NC})"
@@ -612,26 +614,4 @@ main_menu() {
         case $choice in
             1) install_node ;;
             2) check_sync_status ;;
-            3) view_logs ;;
-            4) create_wallet ;;
-            5) import_wallet ;;
-            6) create_validator ;;
-            7) delegate_tokens ;;
-            8) send_tokens ;;
-            9) check_balance ;;
-            10) node_management_menu ;;
-            0) 
-                echo -e "${GREEN}Çıkılıyor... / Exiting...${NC}"
-                exit 0
-                ;;
-            *)
-                echo -e "${RED}Geçersiz seçim! / Invalid choice!${NC}"
-                sleep 2
-                ;;
-        esac
-    done
-}
-
-# Script başlangıcı
-select_language
-main_menu
+            3) view_logs
