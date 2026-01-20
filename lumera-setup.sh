@@ -614,4 +614,26 @@ main_menu() {
         case $choice in
             1) install_node ;;
             2) check_sync_status ;;
-            3) view_logs
+            3) view_logs ;;
+            4) create_wallet ;;
+            5) import_wallet ;;
+            6) create_validator ;;
+            7) delegate_tokens ;;
+            8) send_tokens ;;
+            9) check_balance ;;
+            10) node_management_menu ;;
+            0) 
+                echo -e "${GREEN}Çıkılıyor... / Exiting...${NC}"
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Geçersiz seçim! / Invalid choice!${NC}"
+                sleep 2
+                ;;
+        esac
+    done
+}
+
+# Script başlangıcı
+select_language
+main_menu
