@@ -208,12 +208,12 @@ install_node() {
     # Go yükle
     install_go
     
-    # Lumera binary indir
-    echo -e "${BLUE}Lumera binary indiriliyor...${NC}"
+    # Lumera binary indir (v1.10.1)
+    echo -e "${BLUE}Lumera v1.10.1 binary indiriliyor...${NC}"
     cd $HOME
-    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.9.0/lumera_v1.9.0_linux_amd64.tar.gz
-    tar -xvf lumera_v1.9.0_linux_amd64.tar.gz
-    rm lumera_v1.9.0_linux_amd64.tar.gz
+    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.10.1/lumera_v1.10.1_linux_amd64.tar.gz
+    tar -xvf lumera_v1.10.1_linux_amd64.tar.gz
+    rm lumera_v1.10.1_linux_amd64.tar.gz
     rm -f install.sh
     sudo mv libwasmvm.x86_64.so /usr/lib/
     chmod +x lumerad
@@ -326,6 +326,7 @@ EOF
     echo -e "${GREEN}═══════════════════════════════════════${NC}"
     echo -e "${CYAN}Node Bilgileri:${NC}"
     echo -e "${YELLOW}Moniker: ${WHITE}$MONIKER${NC}"
+    echo -e "${YELLOW}Versiyon: ${WHITE}v1.10.1${NC}"
     echo -e "${YELLOW}Port Prefix: ${WHITE}$CUSTOM_PORT${NC}"
     echo -e "${YELLOW}Chain ID: ${WHITE}lumera-mainnet-1${NC}"
     echo
