@@ -208,12 +208,12 @@ install_node() {
     # Go yükle
     install_go
     
-    # Lumera binary indir (v1.10.1)
-    echo -e "${BLUE}Lumera v1.10.1 binary indiriliyor...${NC}"
+    # Lumera binary indir (v1.11.1)
+    echo -e "${BLUE}Lumera v1.11.1 binary indiriliyor...${NC}"
     cd $HOME
-    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.10.1/lumera_v1.10.1_linux_amd64.tar.gz
-    tar -xvf lumera_v1.10.1_linux_amd64.tar.gz
-    rm lumera_v1.10.1_linux_amd64.tar.gz
+    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.11.1/lumera_v1.11.1_linux_amd64.tar.gz
+    tar -xvf lumera_v1.11.1_linux_amd64.tar.gz
+    rm lumera_v1.11.1_linux_amd64.tar.gz
     rm -f install.sh
     sudo mv libwasmvm.x86_64.so /usr/lib/
     chmod +x lumerad
