@@ -326,7 +326,7 @@ EOF
     echo -e "${GREEN}═══════════════════════════════════════${NC}"
     echo -e "${CYAN}Node Bilgileri:${NC}"
     echo -e "${YELLOW}Moniker: ${WHITE}$MONIKER${NC}"
-    echo -e "${YELLOW}Versiyon: ${WHITE}v1.10.1${NC}"
+    echo -e "${YELLOW}Versiyon: ${WHITE}v1.11.1${NC}"
     echo -e "${YELLOW}Port Prefix: ${WHITE}$CUSTOM_PORT${NC}"
     echo -e "${YELLOW}Chain ID: ${WHITE}lumera-mainnet-1${NC}"
     echo
