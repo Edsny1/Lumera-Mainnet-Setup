@@ -1,6 +1,6 @@
 
 ```bash
-lumerad tx gov vote 11 yes --from wallet --chain-id lumera-mainnet-1 --gas-prices 0.1ulume --gas auto --gas-adjustment 1.6 -y
+lumerad tx gov vote 12 yes --from wallet --chain-id lumera-mainnet-1 --gas-prices 0.1ulume --gas auto --gas-adjustment 1.6 -y
 ```
 
 ```bash
