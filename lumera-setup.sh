@@ -13,10 +13,10 @@ NC='\033[0m'
 # ASCII Art
 print_logo() {
     echo -e "${CYAN}"
-    echo " _______  _______                    _______  _        _       "
+    echo " _______  _______                    _______  _        _        "
     echo "(  ___  )(  ____ \|\     /||\     /|(  ___  )( (    /|| \    /\ "
     echo "| (   ) || (    \/| )   ( || )   ( || (   ) ||  \  ( ||  \  / / "
-    echo "| |   | || (_____ | (___) || |   | || (___) ||   \ | ||  (_/ /  "
+    echo "| |   | || (_____ | (___) || |   | || (___) ||   \ | ||   (_/ /  "
     echo "| |   | |(_____  )|  ___  |( (   ) )|  ___  || (\ \) ||   _ (   "
     echo "| |   | |      ) || (   ) | \ \_/ / | (   ) || | \   ||  ( \ \  "
     echo "| (___) |/\____) || )   ( |  \   /  | )   ( || )  \  ||  /  \ \ "
@@ -25,7 +25,7 @@ print_logo() {
     echo
     echo -e "${YELLOW}============================================================${NC}"
     echo -e "${WHITE}         LumeraNetwork Setup Script${NC}"
-    echo -e "${WHITE}              Prepared by: OshVanK${NC}"
+    echo -e "${WHITE}             Prepared by: OshVanK${NC}"
     echo -e "${YELLOW}============================================================${NC}"
     echo
 }
@@ -208,12 +208,12 @@ install_node() {
     # Go yükle
     install_go
     
-    # Lumera binary indir (v1.11.1)
-    echo -e "${BLUE}Lumera v1.11.1 binary indiriliyor...${NC}"
+    # Lumera binary indir (v1.12.0)
+    echo -e "${BLUE}Lumera v1.12.0 binary indiriliyor...${NC}"
     cd $HOME
-    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.11.1/lumera_v1.11.1_linux_amd64.tar.gz
-    tar -xvf lumera_v1.11.1_linux_amd64.tar.gz
-    rm lumera_v1.11.1_linux_amd64.tar.gz
+    wget https://github.com/LumeraProtocol/lumera/releases/download/v1.12.0/lumera_v1.12.0_linux_amd64.tar.gz
+    tar -xvf lumera_v1.12.0_linux_amd64.tar.gz
+    rm lumera_v1.12.0_linux_amd64.tar.gz
     rm -f install.sh
     sudo mv libwasmvm.x86_64.so /usr/lib/
     chmod +x lumerad
@@ -326,7 +326,7 @@ EOF
     echo -e "${GREEN}═══════════════════════════════════════${NC}"
     echo -e "${CYAN}Node Bilgileri:${NC}"
     echo -e "${YELLOW}Moniker: ${WHITE}$MONIKER${NC}"
-    echo -e "${YELLOW}Versiyon: ${WHITE}v1.11.1${NC}"
+    echo -e "${YELLOW}Versiyon: ${WHITE}v1.12.0${NC}"
     echo -e "${YELLOW}Port Prefix: ${WHITE}$CUSTOM_PORT${NC}"
     echo -e "${YELLOW}Chain ID: ${WHITE}lumera-mainnet-1${NC}"
     echo
@@ -443,6 +443,7 @@ create_validator() {
         --gas=auto \
         --gas-adjustment=1.4 \
         --fees=500ulume \
+        --from=$WALLET_NAME \
         -y
     
     echo
@@ -593,7 +594,7 @@ main_menu() {
         clear
         print_logo
         echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
-        echo -e "${CYAN}║${NC}          $(get_text main_menu)                  ${CYAN}║${NC}"
+        echo -e "${CYAN}║${NC}           $(get_text main_menu)                  ${CYAN}║${NC}"
         echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
         echo
         echo -e "${WHITE}1)${NC}  $(get_text install)"
