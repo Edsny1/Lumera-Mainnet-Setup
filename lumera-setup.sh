@@ -208,29 +208,108 @@ install_node() {
     # Go yükle
     install_go
     
-    # Lumera binary indir (v1.12.0)
+    # ============================================================
+    # FIX: Lumera binary indir ve doğru konuma yerleştir (v1.12.0)
+    # ============================================================
     echo -e "${BLUE}Lumera v1.12.0 binary indiriliyor...${NC}"
-    cd $HOME
+    
+    # Geçici çalışma dizini oluştur
+    WORK_DIR=$(mktemp -d)
+    cd "$WORK_DIR"
+    
     wget https://github.com/LumeraProtocol/lumera/releases/download/v1.12.0/lumera_v1.12.0_linux_amd64.tar.gz
+    
+    if [ ! -f "lumera_v1.12.0_linux_amd64.tar.gz" ]; then
+        echo -e "${RED}Binary indirilemedi! İnternet bağlantınızı kontrol edin.${NC}"
+        cd $HOME
+        rm -rf "$WORK_DIR"
+        sleep 3
+        return
+    fi
+    
+    # Tarball içeriğini listele (debug için)
+    echo -e "${YELLOW}Tarball içeriği:${NC}"
+    tar -tzf lumera_v1.12.0_linux_amd64.tar.gz
+    
+    # Tarball'ı çıkar
     tar -xvf lumera_v1.12.0_linux_amd64.tar.gz
     rm lumera_v1.12.0_linux_amd64.tar.gz
-    rm -f install.sh
-    sudo mv libwasmvm.x86_64.so /usr/lib/
-    chmod +x lumerad
-    mv lumerad $HOME/go/bin/
+    
+    # libwasmvm'i sistem kütüphanesine taşı (varsa)
+    if find "$WORK_DIR" -name "libwasmvm*.so" 2>/dev/null | grep -q .; then
+        find "$WORK_DIR" -name "libwasmvm*.so" -exec sudo mv {} /usr/lib/ \;
+        echo -e "${GREEN}libwasmvm kütüphanesi kuruldu.${NC}"
+    fi
+    
+    # FIX: lumerad binary'sini bul (tarball içinde farklı dizinde olabilir)
+    LUMERAD_BIN=$(find "$WORK_DIR" -name "lumerad" -type f 2>/dev/null | head -1)
+    
+    if [ -z "$LUMERAD_BIN" ]; then
+        echo -e "${RED}HATA: lumerad binary bulunamadı! Tarball içeriğini kontrol edin.${NC}"
+        ls -la "$WORK_DIR"
+        cd $HOME
+        rm -rf "$WORK_DIR"
+        sleep 3
+        return
+    fi
+    
+    echo -e "${GREEN}lumerad binary bulundu: $LUMERAD_BIN${NC}"
+    
+    # Binary'yi çalıştırılabilir yap ve go/bin'e taşı
+    chmod +x "$LUMERAD_BIN"
+    mkdir -p $HOME/go/bin
+    cp "$LUMERAD_BIN" $HOME/go/bin/lumerad
+    
+    # install.sh varsa sil
+    rm -f "$WORK_DIR/install.sh"
+    
+    # Geçici dizini temizle
+    cd $HOME
+    rm -rf "$WORK_DIR"
+    
+    # PATH'e go/bin ekle (henüz aktif değilse)
+    export PATH=$PATH:$HOME/go/bin:/usr/local/go/bin
+    
+    # Binary'nin çalışıp çalışmadığını doğrula
+    if ! command -v lumerad &> /dev/null; then
+        # PATH'ten bulamazsa tam yoldan dene
+        if [ ! -f "$HOME/go/bin/lumerad" ]; then
+            echo -e "${RED}HATA: lumerad binary go/bin klasörüne yerleştirilemedi!${NC}"
+            sleep 3
+            return
+        fi
+        # Symlink oluştur
+        sudo ln -sf $HOME/go/bin/lumerad /usr/local/bin/lumerad
+    fi
+    
+    echo -e "${GREEN}lumerad versiyonu: $($HOME/go/bin/lumerad version 2>/dev/null || echo 'versiyon okunamadı')${NC}"
     
     # Cosmovisor kur
     echo -e "${BLUE}Cosmovisor kuruluyor...${NC}"
     go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@latest
     
-    # Cosmovisor dizin yapısı oluştur
+    # Cosmovisor dizin yapısını oluştur
+    echo -e "${BLUE}Cosmovisor dizin yapısı oluşturuluyor...${NC}"
     mkdir -p $HOME/.lumera/cosmovisor/genesis/bin
     mkdir -p $HOME/.lumera/cosmovisor/upgrades
-    cp $HOME/go/bin/lumerad $HOME/.lumera/cosmovisor/genesis/bin/
+    
+    # FIX: Binary'yi cosmovisor genesis bin'e kopyala (tam yol kullan)
+    cp $HOME/go/bin/lumerad $HOME/.lumera/cosmovisor/genesis/bin/lumerad
+    
+    # Doğrulama: cosmovisor genesis bin'de binary var mı?
+    if [ ! -f "$HOME/.lumera/cosmovisor/genesis/bin/lumerad" ]; then
+        echo -e "${RED}HATA: Cosmovisor genesis binary kopyalanamadı!${NC}"
+        echo -e "${RED}Kaynak: $HOME/go/bin/lumerad${NC}"
+        echo -e "${RED}Hedef: $HOME/.lumera/cosmovisor/genesis/bin/lumerad${NC}"
+        sleep 3
+        return
+    fi
+    
+    echo -e "${GREEN}Cosmovisor genesis binary doğrulandı: $(ls -lh $HOME/.lumera/cosmovisor/genesis/bin/lumerad)${NC}"
     
     # Node initialize
     echo -e "${BLUE}Node başlatılıyor...${NC}"
-    lumerad init $MONIKER --chain-id=lumera-mainnet-1
+    $HOME/go/bin/lumerad init $MONIKER --chain-id=lumera-mainnet-1
     
     # Genesis ve addrbook indir
     echo -e "${BLUE}Genesis ve addrbook indiriliyor...${NC}"
@@ -443,7 +522,6 @@ create_validator() {
         --gas=auto \
         --gas-adjustment=1.4 \
         --fees=500ulume \
-        --from=$WALLET_NAME \
         -y
     
     echo
@@ -568,6 +646,7 @@ node_management_menu() {
                     sudo systemctl daemon-reload
                     rm -rf $HOME/.lumera
                     rm -rf $HOME/go/bin/lumerad
+                    sudo rm -f /usr/local/bin/lumerad
                     sed -i '/LUMERA/d' $HOME/.bash_profile
                     echo -e "${GREEN}Node tamamen silindi!${NC}"
                     sleep 3
